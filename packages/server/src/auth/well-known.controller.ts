@@ -67,9 +67,11 @@ interface WellKnownRequest {
  * that predate the 2025-06-18 discovery flow.
  *
  * Options are constructor-injected via `MCP_RESOURCE_SERVER_OPTIONS` so the
- * controller also works with `McpAuthModule.forRootAsync`.
+ * controller also works with `McpAuthModule.forRootAsync`. Decorators are the
+ * exception: the class is created at module-definition time, so they are
+ * passed to this factory directly (static even under `forRootAsync`).
  */
-export function createWellKnownController(): Type<unknown> {
+export function createWellKnownController(decorators?: ClassDecorator[]): Type<unknown> {
   const nestMajor = nestMajorVersion();
 
   @Controller('.well-known')
@@ -137,5 +139,11 @@ export function createWellKnownController(): Type<unknown> {
     }
   }
 
-  return WellKnownController;
+  let controller: Type<unknown> = WellKnownController;
+  for (const decorator of decorators ?? []) {
+    // Honor decorator return values (a decorator may replace the class).
+    controller = (decorator(controller) as Type<unknown> | undefined) ?? controller;
+  }
+
+  return controller;
 }

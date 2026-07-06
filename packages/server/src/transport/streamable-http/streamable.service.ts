@@ -44,6 +44,13 @@ interface HttpRequest {
   headersSent?: boolean;
   /** Verified bearer identity; the SDK transport reads this and surfaces it as `authInfo`. */
   auth?: McpAuthInfo;
+  /**
+   * Body parsed by an upstream middleware (global `express.json()`, Fastify's
+   * built-in parser, …). When set, the raw stream is already consumed, so it
+   * must be handed to the SDK as `parsedBody` — reading the stream again would
+   * hang the request.
+   */
+  body?: unknown;
 }
 
 interface HttpResponse {
@@ -235,6 +242,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
     await transport.handleRequest(
       req as unknown as IncomingMessage,
       res as unknown as ServerResponse,
+      (req as HttpRequest).body,
     );
   }
 
@@ -249,6 +257,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
         await transport.handleRequest(
           req as unknown as IncomingMessage,
           res as unknown as ServerResponse,
+          reqObj.body,
         );
       }
       return;
@@ -267,6 +276,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
     await transport.handleRequest(
       req as unknown as IncomingMessage,
       res as unknown as ServerResponse,
+      reqObj.body,
     );
 
     const sessionId = transport.sessionId;

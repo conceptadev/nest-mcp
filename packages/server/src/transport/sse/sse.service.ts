@@ -131,9 +131,13 @@ export class SseService implements OnModuleDestroy {
 
     const transport = this.transports.get(sessionId);
     if (transport) {
+      // Body parsed by an upstream middleware (global `express.json()`, Fastify's
+      // built-in parser, …) means the raw stream is consumed — hand it to the SDK
+      // as `parsedBody` or it hangs trying to re-read the stream.
       await transport.handlePostMessage(
         req as unknown as IncomingMessage,
         res as unknown as ServerResponse,
+        (req as { body?: unknown }).body,
       );
     }
   }

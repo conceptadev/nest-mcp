@@ -195,6 +195,14 @@ describe('McpAuthModule', () => {
       const module = McpAuthModule.forRoot(makeOptions());
       expect(module.providers).toContain(McpBearerGuard);
     });
+
+    it('applies controllerDecorators to the well-known controller', () => {
+      const marker: ClassDecorator = (target) => {
+        Reflect.defineMetadata('test:marker', true, target);
+      };
+      const module = McpAuthModule.forRoot(makeOptions({ controllerDecorators: [marker] }));
+      expect(Reflect.getMetadata('test:marker', module.controllers?.[0] as object)).toBe(true);
+    });
   });
 
   describe('forRootAsync()', () => {
@@ -259,6 +267,17 @@ describe('McpAuthModule', () => {
         MCP_BEARER_TOKEN_VERIFIER,
         McpBearerGuard,
       ]);
+    });
+
+    it('applies static controllerDecorators to the well-known controller', () => {
+      const marker: ClassDecorator = (target) => {
+        Reflect.defineMetadata('test:marker', true, target);
+      };
+      const module = McpAuthModule.forRootAsync({
+        useFactory: () => makeOptions(),
+        controllerDecorators: [marker],
+      });
+      expect(Reflect.getMetadata('test:marker', module.controllers?.[0] as object)).toBe(true);
     });
   });
 });

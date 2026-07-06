@@ -254,3 +254,30 @@ describe('createWellKnownController', () => {
     });
   });
 });
+
+describe('createWellKnownController decorators', () => {
+  it('applies class decorators to the generated controller', () => {
+    const seen: unknown[] = [];
+    const marker: ClassDecorator = (target) => {
+      seen.push(target);
+      Reflect.defineMetadata('test:allow-anonymous', true, target);
+    };
+
+    const Ctrl = createWellKnownController([marker]);
+
+    expect(seen).toEqual([Ctrl]);
+    expect(Reflect.getMetadata('test:allow-anonymous', Ctrl)).toBe(true);
+  });
+
+  it('honors a decorator that replaces the class', () => {
+    class Replacement {}
+    const replacing: ClassDecorator = () => Replacement as never;
+
+    expect(createWellKnownController([replacing])).toBe(Replacement);
+  });
+
+  it('generates an undecorated controller when no decorators are given', () => {
+    const Ctrl = createWellKnownController();
+    expect(Reflect.getMetadata('test:allow-anonymous', Ctrl)).toBeUndefined();
+  });
+});

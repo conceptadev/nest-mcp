@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { McpTransportType } from '@nest-mcp/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { SseService } from './sse.service';
 
 // ---------------------------------------------------------------------------
 // Mock register functions (stand-ins for register-handlers exports)
@@ -368,5 +369,28 @@ describe('SseService dynamic registration event handlers', () => {
 
     // Only sess-1 (which has a context) should have registerTool called
     expect(mockRegisterTool).toHaveBeenCalledOnce();
+  });
+});
+
+describe('SseService parsed-body passthrough', () => {
+  it('hands an upstream-parsed body to the SDK on POST messages', async () => {
+    const service = new SseService(
+      { name: 'test-server', version: '1.0.0', transport: McpTransportType.SSE } as never,
+      { events: new EventEmitter() } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    const handlePostMessage = vi.fn(async () => {});
+    (service as unknown as { transports: Map<string, unknown> }).transports.set('sess-1', {
+      handlePostMessage,
+    });
+
+    const body = { jsonrpc: '2.0', method: 'tools/list', id: 1 };
+    const req = { url: '/messages?sessionId=sess-1', headers: { host: 'api.example.com' }, body };
+    const res = {};
+    await service.handleMessage(req, res);
+
+    expect(handlePostMessage).toHaveBeenCalledWith(req, res, body);
   });
 });

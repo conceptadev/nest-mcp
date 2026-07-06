@@ -888,3 +888,58 @@ describe('StreamableHttpService DNS-rebinding option forwarding', () => {
     expect(transport.options.enableDnsRebindingProtection).toBeUndefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Parsed-body passthrough
+//
+// When an upstream middleware (a consumer's global `express.json()`, Fastify's
+// built-in parser) has already parsed the body, the raw stream is consumed —
+// the SDK must receive the parsed value as `parsedBody` or it hangs trying to
+// re-read the stream.
+// ---------------------------------------------------------------------------
+describe('StreamableHttpService parsed-body passthrough', () => {
+  beforeEach(() => {
+    hoisted.transports.length = 0;
+  });
+
+  const jsonRpcBody = { jsonrpc: '2.0', method: 'tools/list', id: 1 };
+
+  it('hands an upstream-parsed body to the SDK on a stateless POST', async () => {
+    const { service } = makeService(makeServiceOptions({ stateless: true }));
+    const req = { ...makeReq(), body: jsonRpcBody };
+
+    await service.handlePostRequest(req, makeExpressRes());
+
+    expect(lastTransport().handleRequest).toHaveBeenCalledWith(req, expect.anything(), jsonRpcBody);
+  });
+
+  it('hands an upstream-parsed body to the SDK when initializing a stateful session', async () => {
+    const { service } = makeService(makeServiceOptions());
+    const req = { ...makeReq(), body: jsonRpcBody };
+
+    await service.handlePostRequest(req, makeExpressRes());
+
+    expect(lastTransport().handleRequest).toHaveBeenCalledWith(req, expect.anything(), jsonRpcBody);
+  });
+
+  it('hands an upstream-parsed body to the SDK on an existing stateful session', async () => {
+    const { service } = makeService(makeServiceOptions());
+    await service.handlePostRequest(makeReq(), makeExpressRes()); // initializes sess-1
+    const transport = lastTransport();
+
+    const req = { ...makeReq({ 'mcp-session-id': 'sess-1' }), body: jsonRpcBody };
+    await service.handlePostRequest(req, makeExpressRes());
+
+    expect(transport.handleRequest).toHaveBeenCalledTimes(2);
+    expect(transport.handleRequest).toHaveBeenLastCalledWith(req, expect.anything(), jsonRpcBody);
+  });
+
+  it('leaves parsedBody undefined when no upstream parser ran (SDK reads the raw stream)', async () => {
+    const { service } = makeService(makeServiceOptions({ stateless: true }));
+    const req = makeReq();
+
+    await service.handlePostRequest(req, makeExpressRes());
+
+    expect(lastTransport().handleRequest).toHaveBeenCalledWith(req, expect.anything(), undefined);
+  });
+});

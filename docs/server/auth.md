@@ -68,9 +68,13 @@ present it as `Authorization: Bearer <token>`.
 | `scopesSupported` | `string[]` | — | Advertised in the metadata. |
 | `resourceName` | `string` | — | Advertised as `resource_name`. |
 | `legacyOAuthMetadata` | `object` | — | Optional RFC 8414 document mirrored at `/.well-known/oauth-authorization-server` for pre-2025-06-18 clients. |
+| `controllerDecorators` | `ClassDecorator[]` | `[]` | Applied to the generated `.well-known` controller — e.g. an `@AllowAnonymous()`-style marker so an app-wide auth guard lets anonymous discovery requests through (the metadata must be publicly readable). |
 
-`forRootAsync({ imports, useFactory, inject })` is available when options come
-from DI (e.g. `ConfigService`).
+`forRootAsync({ imports, useFactory, inject, controllerDecorators })` is
+available when options come from DI (e.g. `ConfigService`). The controller
+class is created when the module is defined — before the factory runs — so
+`controllerDecorators` sits on the async options object; setting it in the
+factory result has no effect.
 
 ### Transport gate
 

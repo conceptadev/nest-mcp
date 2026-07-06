@@ -112,7 +112,7 @@ export class McpAuthModule {
         verifierProvider,
         McpBearerGuard,
       ],
-      controllers: [createWellKnownController()],
+      controllers: [createWellKnownController(options.controllerDecorators)],
       exports: moduleExports,
     };
   }
@@ -131,7 +131,9 @@ export class McpAuthModule {
         verifierProvider,
         McpBearerGuard,
       ],
-      controllers: [createWellKnownController()],
+      // The controller class is created at module-definition time, so the
+      // decorators come from the static async options, never the factory result.
+      controllers: [createWellKnownController(options.controllerDecorators)],
       exports: moduleExports,
     };
   }
