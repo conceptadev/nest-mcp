@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/gateway",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "NestJS MCP Gateway - Proxy, route, and aggregate multiple MCP servers",
   "license": "BSD-3-Clause",
   "main": "./dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/example-postgres",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "private": true,
   "description": "Example MCP server for PostgreSQL database inspection and querying (streamable HTTP transport)",
   "bin": {

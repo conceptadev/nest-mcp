@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/example-browser-mcp",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "private": true,
   "description": "Example MCP server using Playwright headless browser for web content fetching (streamable HTTP transport)",
   "bin": {
