@@ -86,6 +86,7 @@ export class ToolsService {
 | [Resilience Decorators](./resilience-decorators.md) | `@RateLimit`, `@Retry`, `@CircuitBreaker`, `@Timeout` |
 | [Transports](./transports.md) | SSE, Streamable HTTP, STDIO |
 | [Auth](./auth.md) | `McpAuthModule`, OAuth resource server, verifiers, guards |
+| [Recipe: better-auth](./auth-better-auth.md) | better-auth `mcp` plugin as the authorization server |
 | [Resilience](./resilience.md) | Rate limiter, circuit breaker, retry services |
 | [Middleware](./middleware.md) | `@UseMiddleware`, `MiddlewareService` |
 | [Dynamic Builders](./dynamic-builders.md) | `McpToolBuilder`, `McpResourceBuilder`, `McpPromptBuilder` |
