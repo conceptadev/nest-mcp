@@ -76,10 +76,10 @@ class is created when the module is defined — before the factory runs — so
 `controllerDecorators` sits on the async options object; setting it in the
 factory result has no effect.
 
-## App-wide auth guards (`@IsPublic` / `isMcpPublic`)
+## App-wide auth guards (`@IsMcpPublic` / `isMcpPublic`)
 
 Every controller nest-mcp generates — the transport endpoint and the
-`.well-known` discovery controllers — is stamped with `@IsPublic()`
+`.well-known` discovery controllers — is stamped with `@IsMcpPublic()`
 (`MCP_HTTP_PUBLIC_METADATA`): RFC 9728/8414 discovery documents are public by
 spec, and the MCP endpoint authenticates via the MCP authorization spec
 (`McpBearerGuard`), never via an app session.

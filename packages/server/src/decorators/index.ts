@@ -3,7 +3,7 @@ export { Resource } from './resource.decorator';
 export { ResourceTemplate } from './resource-template.decorator';
 export { Prompt } from './prompt.decorator';
 export { Public } from './public.decorator';
-export { IsPublic, isMcpPublic, MCP_HTTP_PUBLIC_METADATA } from './is-public.decorator';
+export { IsMcpPublic, isMcpPublic, MCP_HTTP_PUBLIC_METADATA } from './is-mcp-public.decorator';
 export { Scopes } from './scopes.decorator';
 export { Roles } from './roles.decorator';
 export { Guards } from './guards.decorator';

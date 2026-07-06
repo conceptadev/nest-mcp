@@ -10,7 +10,7 @@ Harden HTTP transports and auth discovery for apps with global middleware:
   Fastify's built-in parser) to the SDK as `parsedBody`. Previously the SDK
   tried to re-read the already-consumed stream and the request hung. Raw-stream
   handling is unchanged when no parser ran.
-- **`@IsPublic()` marker + `isMcpPublic()` helper**: every generated HTTP
+- **`@IsMcpPublic()` marker + `isMcpPublic()` helper**: every generated HTTP
   controller (transport endpoint, `.well-known` discovery) is stamped with
   `MCP_HTTP_PUBLIC_METADATA` — discovery documents are public per RFC 9728, and
   MCP transports authenticate via the MCP authorization spec, never via an app

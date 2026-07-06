@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { ExecutionContext } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
-import { IsPublic, MCP_HTTP_PUBLIC_METADATA, isMcpPublic } from './is-public.decorator';
+import { IsMcpPublic, MCP_HTTP_PUBLIC_METADATA, isMcpPublic } from './is-mcp-public.decorator';
 
 function contextFor(cls: object | null, handler: object | null): ExecutionContext {
   return {
@@ -10,9 +10,9 @@ function contextFor(cls: object | null, handler: object | null): ExecutionContex
   } as unknown as ExecutionContext;
 }
 
-describe('IsPublic', () => {
+describe('IsMcpPublic', () => {
   it('stamps MCP_HTTP_PUBLIC_METADATA on a class', () => {
-    @IsPublic()
+    @IsMcpPublic()
     class PublicController {}
 
     expect(Reflect.getMetadata(MCP_HTTP_PUBLIC_METADATA, PublicController)).toBe(true);
@@ -20,7 +20,7 @@ describe('IsPublic', () => {
 
   it('stamps MCP_HTTP_PUBLIC_METADATA on a handler', () => {
     class MixedController {
-      @IsPublic()
+      @IsMcpPublic()
       open() {}
     }
 
@@ -32,7 +32,7 @@ describe('IsPublic', () => {
 
 describe('isMcpPublic', () => {
   it('is true for a class-level marker', () => {
-    @IsPublic()
+    @IsMcpPublic()
     class PublicController {
       handle() {}
     }
@@ -42,7 +42,7 @@ describe('isMcpPublic', () => {
 
   it('is true for a handler-level marker', () => {
     class MixedController {
-      @IsPublic()
+      @IsMcpPublic()
       open() {}
     }
 

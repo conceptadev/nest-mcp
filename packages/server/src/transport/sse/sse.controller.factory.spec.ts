@@ -14,7 +14,7 @@ describe('createSseController', () => {
       expect(typeof result[1]).toBe('function');
     });
 
-    it('marks both controllers @IsPublic so app-wide auth guards can exempt them', () => {
+    it('marks both controllers @IsMcpPublic so app-wide auth guards can exempt them', () => {
       expect(Reflect.getMetadata('nest-mcp:http-public', SseController)).toBe(true);
       expect(Reflect.getMetadata('nest-mcp:http-public', SseMessagesController)).toBe(true);
     });

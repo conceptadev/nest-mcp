@@ -1,5 +1,5 @@
 import { Controller, Get, Header, Inject, NotFoundException, Req, type Type } from '@nestjs/common';
-import { IsPublic } from '../decorators/is-public.decorator';
+import { IsMcpPublic } from '../decorators/is-mcp-public.decorator';
 import { applyClassDecorators } from '../utils/apply-class-decorators.util';
 import { MCP_RESOURCE_SERVER_OPTIONS } from './auth.constants';
 import type { McpResourceServerOptions } from './interfaces/resource-server-options.interface';
@@ -78,7 +78,7 @@ export function createWellKnownController(decorators?: ClassDecorator[]): Type<u
 
   // RFC 9728 §3: protected-resource metadata is fetched by clients that do not yet
   // have credentials — app-wide auth guards must let these routes through.
-  @IsPublic()
+  @IsMcpPublic()
   @Controller('.well-known')
   class WellKnownController {
     constructor(

@@ -12,7 +12,7 @@ export {
   Prompt,
   Completion,
   Public,
-  IsPublic,
+  IsMcpPublic,
   isMcpPublic,
   MCP_HTTP_PUBLIC_METADATA,
   Scopes,

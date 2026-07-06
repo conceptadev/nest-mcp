@@ -28,11 +28,11 @@ export const MCP_HTTP_PUBLIC_METADATA = 'nest-mcp:http-public';
  * }
  * ```
  */
-export function IsPublic(): CustomDecorator<string> {
+export function IsMcpPublic(): CustomDecorator<string> {
   return SetMetadata(MCP_HTTP_PUBLIC_METADATA, true);
 }
 
-/** True when the route's controller class or handler carries {@link IsPublic} metadata. */
+/** True when the route's controller class or handler carries {@link IsMcpPublic} metadata. */
 export function isMcpPublic(context: ExecutionContext): boolean {
   const cls = context.getClass?.();
   const handler = context.getHandler?.();

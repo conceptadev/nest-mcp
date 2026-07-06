@@ -10,7 +10,7 @@ import {
   UseGuards,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
-import { IsPublic } from '../../decorators/is-public.decorator';
+import { IsMcpPublic } from '../../decorators/is-mcp-public.decorator';
 import { SseService } from './sse.service';
 
 export interface SseControllerOptions {
@@ -27,8 +27,8 @@ export function createSseController(
   opts?: SseControllerOptions,
 ): Type<unknown>[] {
   // MCP transports authenticate per the MCP authorization spec, never via an app
-  // session — app-wide guards must not block them (see IsPublic docs).
-  @IsPublic()
+  // session — app-wide guards must not block them (see IsMcpPublic docs).
+  @IsMcpPublic()
   @Controller({ path: sseEndpoint, version: VERSION_NEUTRAL })
   class SseController {
     constructor(private readonly sseService: SseService) {}
@@ -39,7 +39,7 @@ export function createSseController(
     }
   }
 
-  @IsPublic()
+  @IsMcpPublic()
   @Controller({ path: messagesEndpoint, version: VERSION_NEUTRAL })
   class SseMessagesController {
     constructor(private readonly sseService: SseService) {}
