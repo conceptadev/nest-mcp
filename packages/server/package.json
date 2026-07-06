@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/server",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "NestJS MCP Server - Build Model Context Protocol servers with NestJS",
   "license": "BSD-3-Clause",
   "main": "./dist/index.js",

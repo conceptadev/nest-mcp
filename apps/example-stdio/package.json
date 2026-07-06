@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/example-stdio",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "private": true,
   "description": "Example MCP server using stdio transport for CLI integration",
   "bin": {

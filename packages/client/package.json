@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/client",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "NestJS MCP Client - Connect to and consume MCP servers from NestJS",
   "license": "BSD-3-Clause",
   "main": "./dist/index.js",

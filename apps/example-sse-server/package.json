@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/example-sse-server",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "private": true,
   "description": "Example MCP server using SSE transport with forRootAsync configuration",
   "scripts": {

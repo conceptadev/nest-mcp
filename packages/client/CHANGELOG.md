@@ -1,5 +1,12 @@
 # @nest-mcp/client
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [41c7474]
+  - @nest-mcp/common@0.6.0
+
 ## 0.3.0
 
 ### Minor Changes
