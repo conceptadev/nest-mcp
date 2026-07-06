@@ -21,6 +21,10 @@ describe('createStreamableHttpController', () => {
     it('uses VERSION_NEUTRAL', () => {
       expect(Reflect.getMetadata('__version__', Controller)).toBe(VERSION_NEUTRAL);
     });
+
+    it('is marked @IsPublic so app-wide auth guards can exempt it', () => {
+      expect(Reflect.getMetadata('nest-mcp:http-public', Controller)).toBe(true);
+    });
   });
 
   describe('HTTP method bindings', () => {

@@ -1,4 +1,6 @@
 import { Controller, Get, Header, Inject, NotFoundException, Req, type Type } from '@nestjs/common';
+import { IsPublic } from '../decorators/is-public.decorator';
+import { applyClassDecorators } from '../utils/apply-class-decorators.util';
 import { MCP_RESOURCE_SERVER_OPTIONS } from './auth.constants';
 import type { McpResourceServerOptions } from './interfaces/resource-server-options.interface';
 
@@ -74,6 +76,9 @@ interface WellKnownRequest {
 export function createWellKnownController(decorators?: ClassDecorator[]): Type<unknown> {
   const nestMajor = nestMajorVersion();
 
+  // RFC 9728 §3: protected-resource metadata is fetched by clients that do not yet
+  // have credentials — app-wide auth guards must let these routes through.
+  @IsPublic()
   @Controller('.well-known')
   class WellKnownController {
     constructor(
@@ -139,11 +144,5 @@ export function createWellKnownController(decorators?: ClassDecorator[]): Type<u
     }
   }
 
-  let controller: Type<unknown> = WellKnownController;
-  for (const decorator of decorators ?? []) {
-    // Honor decorator return values (a decorator may replace the class).
-    controller = (decorator(controller) as Type<unknown> | undefined) ?? controller;
-  }
-
-  return controller;
+  return applyClassDecorators(WellKnownController, decorators);
 }

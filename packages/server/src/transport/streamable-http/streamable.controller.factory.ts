@@ -10,6 +10,8 @@ import {
   UseGuards,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
+import { IsPublic } from '../../decorators/is-public.decorator';
+import { applyClassDecorators } from '../../utils/apply-class-decorators.util';
 import { StreamableHttpService } from './streamable.service';
 
 export interface StreamableHttpControllerOptions {
@@ -34,6 +36,9 @@ export function createStreamableHttpController(
   endpoint: string,
   opts?: StreamableHttpControllerOptions,
 ): Type<unknown> {
+  // The MCP endpoint authenticates per the MCP authorization spec (McpBearerGuard when
+  // oauth is enabled), never via an app session — app-wide guards must not block it.
+  @IsPublic()
   @Controller({ path: endpoint, version: VERSION_NEUTRAL })
   class StreamableHttpController {
     constructor(private readonly streamableService: StreamableHttpService) {}
@@ -60,11 +65,5 @@ export function createStreamableHttpController(
     );
   }
 
-  let controller: Type<unknown> = StreamableHttpController;
-  for (const decorator of opts?.decorators ?? []) {
-    // Honor decorator return values (a decorator may replace the class).
-    controller = (decorator(controller) as Type<unknown> | undefined) ?? controller;
-  }
-
-  return controller;
+  return applyClassDecorators(StreamableHttpController, opts?.decorators);
 }

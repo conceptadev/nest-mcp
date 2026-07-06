@@ -280,4 +280,9 @@ describe('createWellKnownController decorators', () => {
     const Ctrl = createWellKnownController();
     expect(Reflect.getMetadata('test:allow-anonymous', Ctrl)).toBeUndefined();
   });
+
+  it('is always marked @IsPublic — RFC 9728 discovery documents are public by spec', () => {
+    const Ctrl = createWellKnownController();
+    expect(Reflect.getMetadata('nest-mcp:http-public', Ctrl)).toBe(true);
+  });
 });
