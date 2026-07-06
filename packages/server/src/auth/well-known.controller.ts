@@ -1,4 +1,6 @@
 import { Controller, Get, Header, Inject, NotFoundException, Req, type Type } from '@nestjs/common';
+import { IsMcpPublic } from '../decorators/is-mcp-public.decorator';
+import { applyClassDecorators } from '../utils/apply-class-decorators.util';
 import { MCP_RESOURCE_SERVER_OPTIONS } from './auth.constants';
 import type { McpResourceServerOptions } from './interfaces/resource-server-options.interface';
 
@@ -67,11 +69,16 @@ interface WellKnownRequest {
  * that predate the 2025-06-18 discovery flow.
  *
  * Options are constructor-injected via `MCP_RESOURCE_SERVER_OPTIONS` so the
- * controller also works with `McpAuthModule.forRootAsync`.
+ * controller also works with `McpAuthModule.forRootAsync`. Decorators are the
+ * exception: the class is created at module-definition time, so they are
+ * passed to this factory directly (static even under `forRootAsync`).
  */
-export function createWellKnownController(): Type<unknown> {
+export function createWellKnownController(decorators?: ClassDecorator[]): Type<unknown> {
   const nestMajor = nestMajorVersion();
 
+  // RFC 9728 §3: protected-resource metadata is fetched by clients that do not yet
+  // have credentials — app-wide auth guards must let these routes through.
+  @IsMcpPublic()
   @Controller('.well-known')
   class WellKnownController {
     constructor(
@@ -137,5 +144,5 @@ export function createWellKnownController(): Type<unknown> {
     }
   }
 
-  return WellKnownController;
+  return applyClassDecorators(WellKnownController, decorators);
 }

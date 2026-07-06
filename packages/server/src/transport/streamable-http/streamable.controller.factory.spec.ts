@@ -21,6 +21,10 @@ describe('createStreamableHttpController', () => {
     it('uses VERSION_NEUTRAL', () => {
       expect(Reflect.getMetadata('__version__', Controller)).toBe(VERSION_NEUTRAL);
     });
+
+    it('is marked @IsMcpPublic so app-wide auth guards can exempt it', () => {
+      expect(Reflect.getMetadata('nest-mcp:http-public', Controller)).toBe(true);
+    });
   });
 
   describe('HTTP method bindings', () => {
@@ -68,8 +72,8 @@ describe('createStreamableHttpController', () => {
       const ctrl = makeInstance(service);
       const req = {};
       const res = {};
-      await ctrl.handlePost(req, res);
-      expect(service.handlePostRequest).toHaveBeenCalledWith(req, res);
+      await ctrl.handlePost(req, res, { jsonrpc: '2.0' });
+      expect(service.handlePostRequest).toHaveBeenCalledWith(req, res, { jsonrpc: '2.0' });
     });
 
     it('handleGet delegates to streamableService.handleGetRequest', async () => {

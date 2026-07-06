@@ -13,6 +13,11 @@ describe('createSseController', () => {
       expect(typeof result[0]).toBe('function');
       expect(typeof result[1]).toBe('function');
     });
+
+    it('marks both controllers @IsMcpPublic so app-wide auth guards can exempt them', () => {
+      expect(Reflect.getMetadata('nest-mcp:http-public', SseController)).toBe(true);
+      expect(Reflect.getMetadata('nest-mcp:http-public', SseMessagesController)).toBe(true);
+    });
   });
 
   describe('SseController (GET endpoint)', () => {
@@ -71,8 +76,8 @@ describe('createSseController', () => {
       )(mockService);
       const req = {};
       const res = {};
-      await ctrl.handleMessage(req, res);
-      expect(handleMessage).toHaveBeenCalledWith(req, res);
+      await ctrl.handleMessage(req, res, { jsonrpc: '2.0' });
+      expect(handleMessage).toHaveBeenCalledWith(req, res, { jsonrpc: '2.0' });
     });
   });
 

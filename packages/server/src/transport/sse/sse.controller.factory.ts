@@ -1,4 +1,5 @@
 import {
+  Body,
   type CanActivate,
   Controller,
   Get,
@@ -9,6 +10,7 @@ import {
   UseGuards,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
+import { IsMcpPublic } from '../../decorators/is-mcp-public.decorator';
 import { SseService } from './sse.service';
 
 export interface SseControllerOptions {
@@ -24,6 +26,9 @@ export function createSseController(
   messagesEndpoint: string,
   opts?: SseControllerOptions,
 ): Type<unknown>[] {
+  // MCP transports authenticate per the MCP authorization spec, never via an app
+  // session — app-wide guards must not block them (see IsMcpPublic docs).
+  @IsMcpPublic()
   @Controller({ path: sseEndpoint, version: VERSION_NEUTRAL })
   class SseController {
     constructor(private readonly sseService: SseService) {}
@@ -34,13 +39,20 @@ export function createSseController(
     }
   }
 
+  @IsMcpPublic()
   @Controller({ path: messagesEndpoint, version: VERSION_NEUTRAL })
   class SseMessagesController {
     constructor(private readonly sseService: SseService) {}
 
     @Post()
-    async handleMessage(@Req() req: unknown, @Res() res: unknown): Promise<void> {
-      await this.sseService.handleMessage(req, res);
+    async handleMessage(
+      @Req() req: unknown,
+      @Res() res: unknown,
+      // Body parsed by the framework (Express body parser / Fastify built-in) — threaded to
+      // the SDK as `parsedBody`. Undefined when no parser ran (the SDK reads the raw stream).
+      @Body() body: unknown,
+    ): Promise<void> {
+      await this.sseService.handleMessage(req, res, body);
     }
   }
 

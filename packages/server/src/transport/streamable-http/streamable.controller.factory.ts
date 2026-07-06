@@ -1,4 +1,5 @@
 import {
+  Body,
   type CanActivate,
   Controller,
   Delete,
@@ -10,6 +11,8 @@ import {
   UseGuards,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
+import { IsMcpPublic } from '../../decorators/is-mcp-public.decorator';
+import { applyClassDecorators } from '../../utils/apply-class-decorators.util';
 import { StreamableHttpService } from './streamable.service';
 
 export interface StreamableHttpControllerOptions {
@@ -34,13 +37,22 @@ export function createStreamableHttpController(
   endpoint: string,
   opts?: StreamableHttpControllerOptions,
 ): Type<unknown> {
+  // The MCP endpoint authenticates per the MCP authorization spec (McpBearerGuard when
+  // oauth is enabled), never via an app session — app-wide guards must not block it.
+  @IsMcpPublic()
   @Controller({ path: endpoint, version: VERSION_NEUTRAL })
   class StreamableHttpController {
     constructor(private readonly streamableService: StreamableHttpService) {}
 
     @Post()
-    async handlePost(@Req() req: unknown, @Res() res: unknown): Promise<void> {
-      await this.streamableService.handlePostRequest(req, res);
+    async handlePost(
+      @Req() req: unknown,
+      @Res() res: unknown,
+      // Body parsed by the framework (Express body parser / Fastify built-in) — threaded to
+      // the SDK as `parsedBody`. Undefined when no parser ran (the SDK reads the raw stream).
+      @Body() body: unknown,
+    ): Promise<void> {
+      await this.streamableService.handlePostRequest(req, res, body);
     }
 
     @Get()
@@ -60,11 +72,5 @@ export function createStreamableHttpController(
     );
   }
 
-  let controller: Type<unknown> = StreamableHttpController;
-  for (const decorator of opts?.decorators ?? []) {
-    // Honor decorator return values (a decorator may replace the class).
-    controller = (decorator(controller) as Type<unknown> | undefined) ?? controller;
-  }
-
-  return controller;
+  return applyClassDecorators(StreamableHttpController, opts?.decorators);
 }

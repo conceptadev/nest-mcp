@@ -207,7 +207,7 @@ import { ToolsService } from './tools.service';
     McpModule.forRoot({
       name: 'my-server',
       version: '1.0.0',
-      transports: [{ type: McpTransportType.STREAMABLE_HTTP }],
+      transport: McpTransportType.STREAMABLE_HTTP,
     }),
   ],
   providers: [ToolsService],

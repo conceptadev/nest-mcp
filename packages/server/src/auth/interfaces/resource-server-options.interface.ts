@@ -79,6 +79,15 @@ export interface McpResourceServerOptions {
    * 2025-06-18 discovery flow. Served verbatim; omitted → 404.
    */
   legacyOAuthMetadata?: Record<string, unknown>;
+  /**
+   * Class decorators applied to the generated `.well-known` controller —
+   * e.g. an `@AllowAnonymous()`-style marker so an app-wide auth guard lets
+   * anonymous discovery requests through (RFC 9728 metadata must be publicly
+   * readable). Applied when the module is defined, so with
+   * `McpAuthModule.forRootAsync` set them on the async options object, not in
+   * the factory result (where they are ignored).
+   */
+  controllerDecorators?: ClassDecorator[];
 }
 
 export interface McpResourceServerAsyncOptions {
@@ -89,4 +98,11 @@ export interface McpResourceServerAsyncOptions {
   useFactory: (...args: any[]) => McpResourceServerOptions | Promise<McpResourceServerOptions>;
   // biome-ignore lint/suspicious/noExplicitAny: NestJS injection tokens have broad types
   inject?: any[];
+  /**
+   * Class decorators applied to the generated `.well-known` controller. The
+   * controller class is created when the module is defined — before the
+   * factory runs — so these must be static; `controllerDecorators` in the
+   * factory result is ignored.
+   */
+  controllerDecorators?: ClassDecorator[];
 }
