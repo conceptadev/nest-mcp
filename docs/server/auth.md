@@ -13,7 +13,8 @@
 
 Token **issuance** is the authorization server's job, not the MCP server's.
 Bring an external IdP (Auth0, Keycloak, WorkOS, Azure AD, …) or run your own
-AS — see the recipes below.
+AS — see the recipes below, or the dedicated
+[better-auth recipe](./auth-better-auth.md) if your app already uses better-auth.
 
 ## Setup
 
