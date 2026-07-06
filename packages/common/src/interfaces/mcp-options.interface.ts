@@ -27,6 +27,13 @@ export interface McpModuleOptions {
   title?: string;
   version: string;
   description?: string;
+  /**
+   * Usage guidance surfaced to clients in the `initialize` result — the text an
+   * LLM reads to learn HOW to use this server (tool preferences, workflows,
+   * caveats). Distinct from `description`, which says what the server IS; when
+   * omitted, `description` is used as a fallback.
+   */
+  instructions?: string;
   /** URL of the website associated with this server. */
   websiteUrl?: string;
   /** Icons representing this server, sent in MCP `Implementation`. */

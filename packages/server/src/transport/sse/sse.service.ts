@@ -1,4 +1,3 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import type { McpExecutionContext, McpModuleOptions } from '@nest-mcp/common';
@@ -22,6 +21,7 @@ import { createMcpServer } from '../../server/server.factory';
 import { ResourceSubscriptionManager } from '../../subscription/resource-subscription.manager';
 import { TaskManager } from '../../task/task.manager';
 import type { HttpResponse } from '../http-response.interface';
+import { rawRequestOf, rawResponseOf } from '../raw-http.util';
 import {
   registerHandlers,
   registerPromptOnServer,
@@ -62,7 +62,10 @@ export class SseService implements OnModuleDestroy {
     const messagesEndpoint =
       this.options.transportOptions?.sse?.messagesEndpoint ?? DEFAULT_SSE_MESSAGES_ENDPOINT;
 
-    const transport = new SSEServerTransport(messagesEndpoint, res as unknown as ServerResponse);
+    // The SDK writes the event stream directly — hand it the raw Node response
+    // (Fastify's reply wrapper is not a ServerResponse).
+    const rawRes = rawResponseOf(res);
+    const transport = new SSEServerTransport(messagesEndpoint, rawRes);
     const sessionId = transport.sessionId;
 
     const server = createMcpServer(this.registry, this.options, this.taskManager);
@@ -89,13 +92,12 @@ export class SseService implements OnModuleDestroy {
     this.contexts.set(sessionId, ctx);
     this.sdkHandles.set(sessionId, new Map());
 
-    // Setup ping
-    const resObj = res as Record<string, unknown>;
+    // Setup ping — written to the raw stream, same channel the SDK uses.
     const pingInterval = this.options.transportOptions?.sse?.pingInterval ?? DEFAULT_PING_INTERVAL;
     if (pingInterval > 0) {
       const interval = setInterval(() => {
         try {
-          (resObj.write as (chunk: string) => void)?.(':ping\n\n');
+          rawRes.write(':ping\n\n');
         } catch {
           clearInterval(interval);
         }
@@ -103,21 +105,14 @@ export class SseService implements OnModuleDestroy {
       this.pingIntervals.set(sessionId, interval);
     }
 
-    // Cleanup on close
-    const cleanup = () => this.cleanupSession(sessionId);
-    (resObj.on as (event: string, cb: () => void) => void)?.('close', cleanup);
-    if (resObj.raw) {
-      ((resObj.raw as Record<string, unknown>).on as (event: string, cb: () => void) => void)?.(
-        'close',
-        cleanup,
-      );
-    }
+    // Cleanup on close — the raw response emits 'close' on both frameworks.
+    rawRes.on('close', () => this.cleanupSession(sessionId));
 
     await server.connect(transport);
     this.logger.log(`SSE connection: ${sessionId}`);
   }
 
-  async handleMessage(req: unknown, res: unknown): Promise<void> {
+  async handleMessage(req: unknown, res: unknown, parsedBody?: unknown): Promise<void> {
     const reqObj = req as { url: string; headers: { host: string } };
     const url = new URL(reqObj.url, `http://${reqObj.headers.host}`);
     const sessionId = url.searchParams.get('sessionId');
@@ -135,9 +130,9 @@ export class SseService implements OnModuleDestroy {
       // built-in parser, …) means the raw stream is consumed — hand it to the SDK
       // as `parsedBody` or it hangs trying to re-read the stream.
       await transport.handlePostMessage(
-        req as unknown as IncomingMessage,
-        res as unknown as ServerResponse,
-        (req as { body?: unknown }).body,
+        rawRequestOf(req),
+        rawResponseOf(res),
+        parsedBody ?? (req as { body?: unknown }).body,
       );
     }
   }

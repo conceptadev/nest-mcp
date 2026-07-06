@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { StreamableHTTPServerTransportOptions } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -30,6 +29,7 @@ import { ExecutionPipelineService } from '../../execution/pipeline.service';
 import { createMcpServer } from '../../server/server.factory';
 import { ResourceSubscriptionManager } from '../../subscription/resource-subscription.manager';
 import { TaskManager } from '../../task/task.manager';
+import { rawRequestOf, rawResponseOf } from '../raw-http.util';
 import {
   registerHandlers,
   registerPromptOnServer,
@@ -125,12 +125,16 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
     return this.bearerVerifier;
   }
 
-  async handlePostRequest(req: unknown, res: unknown): Promise<void> {
+  async handlePostRequest(req: unknown, res: unknown, parsedBody?: unknown): Promise<void> {
     try {
+      // Prefer the body the generated controller received via @Body() (works on Express
+      // AND Fastify); fall back to the framework request's own parsed body for direct
+      // service callers (custom controllers). Undefined → the SDK reads the raw stream.
+      const body = parsedBody ?? (req as HttpRequest).body;
       if (this.isStateless) {
-        await this.handleStatelessPost(req, res);
+        await this.handleStatelessPost(req, res, body);
       } else {
-        await this.handleStatefulPost(req, res);
+        await this.handleStatefulPost(req, res, body);
       }
     } catch (error) {
       this.logger.error('Error handling POST request', error);
@@ -162,10 +166,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
 
     const transport = this.transports.get(sessionId);
     if (transport) {
-      await transport.handleRequest(
-        req as unknown as IncomingMessage,
-        res as unknown as ServerResponse,
-      );
+      await transport.handleRequest(rawRequestOf(req), rawResponseOf(res));
     }
   }
 
@@ -224,7 +225,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
     return false;
   }
 
-  private async handleStatelessPost(req: unknown, res: unknown): Promise<void> {
+  private async handleStatelessPost(req: unknown, res: unknown, body: unknown): Promise<void> {
     const transport = new StreamableHTTPServerTransport(this.buildTransportOptions(true));
 
     const server = this.createAndConnectServer(
@@ -233,20 +234,16 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
       req,
     );
 
-    const resObj = res as HttpResponse;
-    resObj.on?.('close', () => {
+    // Attach cleanup to the RAW response: under Fastify the reply wrapper has no `on`.
+    rawResponseOf(res).on?.('close', () => {
       transport.close();
       server.close();
     });
 
-    await transport.handleRequest(
-      req as unknown as IncomingMessage,
-      res as unknown as ServerResponse,
-      (req as HttpRequest).body,
-    );
+    await transport.handleRequest(rawRequestOf(req), rawResponseOf(res), body);
   }
 
-  private async handleStatefulPost(req: unknown, res: unknown): Promise<void> {
+  private async handleStatefulPost(req: unknown, res: unknown, body: unknown): Promise<void> {
     const reqObj = req as HttpRequest;
     const existingSessionId = reqObj.headers?.['mcp-session-id'] as string | undefined;
 
@@ -254,11 +251,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
       if (!this.enforceSessionBinding(existingSessionId, req, res)) return;
       const transport = this.transports.get(existingSessionId);
       if (transport) {
-        await transport.handleRequest(
-          req as unknown as IncomingMessage,
-          res as unknown as ServerResponse,
-          reqObj.body,
-        );
+        await transport.handleRequest(rawRequestOf(req), rawResponseOf(res), body);
       }
       return;
     }
@@ -273,11 +266,7 @@ export class StreamableHttpService implements OnModuleInit, OnModuleDestroy {
 
     const server = this.createAndConnectServer(transport, 'pending', req);
 
-    await transport.handleRequest(
-      req as unknown as IncomingMessage,
-      res as unknown as ServerResponse,
-      reqObj.body,
-    );
+    await transport.handleRequest(rawRequestOf(req), rawResponseOf(res), body);
 
     const sessionId = transport.sessionId;
     if (sessionId) {

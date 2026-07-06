@@ -76,8 +76,8 @@ describe('createSseController', () => {
       )(mockService);
       const req = {};
       const res = {};
-      await ctrl.handleMessage(req, res);
-      expect(handleMessage).toHaveBeenCalledWith(req, res);
+      await ctrl.handleMessage(req, res, { jsonrpc: '2.0' });
+      expect(handleMessage).toHaveBeenCalledWith(req, res, { jsonrpc: '2.0' });
     });
   });
 

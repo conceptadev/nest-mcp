@@ -942,4 +942,43 @@ describe('StreamableHttpService parsed-body passthrough', () => {
 
     expect(lastTransport().handleRequest).toHaveBeenCalledWith(req, expect.anything(), undefined);
   });
+
+  it('prefers the controller-threaded @Body over the framework request body', async () => {
+    const { service } = makeService(makeServiceOptions({ stateless: true }));
+    const req = { ...makeReq(), body: { stale: true } };
+
+    await service.handlePostRequest(req, makeExpressRes(), jsonRpcBody);
+
+    expect(lastTransport().handleRequest).toHaveBeenCalledWith(req, expect.anything(), jsonRpcBody);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fastify raw unwrapping
+//
+// Fastify hands controllers request/reply WRAPPERS; the SDK needs the raw Node
+// objects (`.raw`) — and it reads the guard-verified identity from `req.auth`,
+// which the guard set on the wrapper, so it must be mirrored onto the raw one.
+// ---------------------------------------------------------------------------
+describe('StreamableHttpService Fastify raw unwrapping', () => {
+  beforeEach(() => {
+    hoisted.transports.length = 0;
+  });
+
+  it('hands the SDK the raw req/res and mirrors auth onto the raw request', async () => {
+    const { service } = makeService(makeServiceOptions({ stateless: true }));
+    const body = { jsonrpc: '2.0', method: 'tools/list', id: 1 };
+    const auth = makeAuthInfo('user-1');
+    const rawReq = { headers: { host: 'api.example.com' } } as { auth?: unknown };
+    const rawRes = { on: vi.fn() };
+    const req = { headers: { host: 'api.example.com' }, auth, raw: rawReq, body };
+    const res = { raw: rawRes };
+
+    await service.handlePostRequest(req, res);
+
+    expect(lastTransport().handleRequest).toHaveBeenCalledWith(rawReq, rawRes, body);
+    expect(rawReq.auth).toBe(auth);
+    // Stateless cleanup listens on the RAW response (Fastify reply has no `on`).
+    expect(rawRes.on).toHaveBeenCalledWith('close', expect.any(Function));
+  });
 });

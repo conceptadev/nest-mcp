@@ -52,16 +52,32 @@ describe('createMcpServer', () => {
     expect(server).toBeInstanceOf(McpServer);
   });
 
-  it('includes instructions when description is provided', () => {
-    // If description is absent, no throw; if present, it is forwarded.
-    // We verify the factory does not throw in either case.
-    expect(() =>
-      createMcpServer(makeRegistry(), { ...baseOptions, description: 'A helpful server' }),
-    ).not.toThrow();
+  // Reads the SDK Server's private `_instructions` — the only place the value
+  // lands before an initialize round-trip. Pinned to @modelcontextprotocol/sdk ^1.26.
+  function instructionsOf(server: McpServer): string | undefined {
+    return (server.server as unknown as { _instructions?: string })._instructions;
+  }
+
+  it('forwards dedicated instructions to the SDK server', () => {
+    const server = createMcpServer(makeRegistry(), {
+      ...baseOptions,
+      description: 'What the server is',
+      instructions: 'Prefer update over deploy when the user says "again".',
+    });
+    expect(instructionsOf(server)).toBe('Prefer update over deploy when the user says "again".');
   });
 
-  it('does not throw when description is absent', () => {
-    expect(() => createMcpServer(makeRegistry(), baseOptions)).not.toThrow();
+  it('falls back to description as instructions when none are given (back-compat)', () => {
+    const server = createMcpServer(makeRegistry(), {
+      ...baseOptions,
+      description: 'A helpful server',
+    });
+    expect(instructionsOf(server)).toBe('A helpful server');
+  });
+
+  it('sends no instructions when neither is provided', () => {
+    const server = createMcpServer(makeRegistry(), baseOptions);
+    expect(instructionsOf(server)).toBeUndefined();
   });
 
   it('passes taskStore and taskMessageQueue when taskManager is provided', () => {

@@ -29,7 +29,8 @@ export class AppModule {}
 |--------|------|----------|-------------|
 | `name` | `string` | Yes | Server name reported to clients |
 | `version` | `string` | Yes | Server version |
-| `description` | `string` | No | Server description |
+| `description` | `string` | No | Server description (what the server IS) |
+| `instructions` | `string` | No | Usage guidance sent to clients at `initialize` — what the LLM reads to learn HOW to use the server. Falls back to `description` when omitted |
 | `transport` | `McpTransportType \| McpTransportType[]` | Yes | One or more transports to enable |
 | `transportOptions` | `TransportOptions` | No | Per-transport configuration |
 | `guards` | `McpGuardClass[]` | No | Global guards applied to all requests |

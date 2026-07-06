@@ -72,8 +72,8 @@ describe('createStreamableHttpController', () => {
       const ctrl = makeInstance(service);
       const req = {};
       const res = {};
-      await ctrl.handlePost(req, res);
-      expect(service.handlePostRequest).toHaveBeenCalledWith(req, res);
+      await ctrl.handlePost(req, res, { jsonrpc: '2.0' });
+      expect(service.handlePostRequest).toHaveBeenCalledWith(req, res, { jsonrpc: '2.0' });
     });
 
     it('handleGet delegates to streamableService.handleGetRequest', async () => {

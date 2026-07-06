@@ -1,4 +1,5 @@
 import {
+  Body,
   type CanActivate,
   Controller,
   Delete,
@@ -44,8 +45,14 @@ export function createStreamableHttpController(
     constructor(private readonly streamableService: StreamableHttpService) {}
 
     @Post()
-    async handlePost(@Req() req: unknown, @Res() res: unknown): Promise<void> {
-      await this.streamableService.handlePostRequest(req, res);
+    async handlePost(
+      @Req() req: unknown,
+      @Res() res: unknown,
+      // Body parsed by the framework (Express body parser / Fastify built-in) — threaded to
+      // the SDK as `parsedBody`. Undefined when no parser ran (the SDK reads the raw stream).
+      @Body() body: unknown,
+    ): Promise<void> {
+      await this.streamableService.handlePostRequest(req, res, body);
     }
 
     @Get()

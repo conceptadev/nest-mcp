@@ -1,4 +1,5 @@
 import {
+  Body,
   type CanActivate,
   Controller,
   Get,
@@ -44,8 +45,14 @@ export function createSseController(
     constructor(private readonly sseService: SseService) {}
 
     @Post()
-    async handleMessage(@Req() req: unknown, @Res() res: unknown): Promise<void> {
-      await this.sseService.handleMessage(req, res);
+    async handleMessage(
+      @Req() req: unknown,
+      @Res() res: unknown,
+      // Body parsed by the framework (Express body parser / Fastify built-in) — threaded to
+      // the SDK as `parsedBody`. Undefined when no parser ran (the SDK reads the raw stream).
+      @Body() body: unknown,
+    ): Promise<void> {
+      await this.sseService.handleMessage(req, res, body);
     }
   }
 

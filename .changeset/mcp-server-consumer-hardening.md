@@ -1,5 +1,6 @@
 ---
 "@nest-mcp/server": minor
+"@nest-mcp/common": minor
 ---
 
 Harden HTTP transports and auth discovery for apps with global middleware:
@@ -20,5 +21,15 @@ Harden HTTP transports and auth discovery for apps with global middleware:
   generated `.well-known` controller (both `forRoot` and `forRootAsync`),
   mirroring the transport controller option. Decorator application now uses
   standard `Reflect.decorate` semantics in both factories.
+- **Fastify at the SDK boundary**: the streamable HTTP and SSE transports now
+  unwrap `request.raw`/`reply.raw` before handing requests to the MCP SDK (and
+  mirror the guard-verified `req.auth` onto the raw request). Previously the
+  Fastify wrappers were passed straight through and the transports were broken
+  under `@nestjs/platform-fastify` — now covered by a real-HTTP e2e that runs
+  the streamable transport on BOTH adapters. Generated controllers also thread
+  the framework-parsed `@Body()` to the SDK explicitly.
+- **`instructions` server option**: dedicated LLM usage guidance surfaced in
+  the `initialize` result, distinct from `description` (which remains the
+  fallback for back-compat).
 - README quick-start fixed to use the real `transport` option (was showing a
   nonexistent `transports: [{ type }]` shape).
