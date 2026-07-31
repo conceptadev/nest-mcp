@@ -32,8 +32,8 @@ The following packages must be installed in your project:
 | Package | Version |
 |---------|---------|
 | `@modelcontextprotocol/sdk` | `^1.10.0` |
-| `@nestjs/common` | `^10.0.0 \|\| ^11.0.0` |
-| `@nestjs/core` | `^10.0.0 \|\| ^11.0.0` |
+| `@nestjs/common` | `^10.0.0 \|\| ^11.0.0 \|\| 12.0.0-alpha.5` |
+| `@nestjs/core` | `^10.0.0 \|\| ^11.0.0 \|\| 12.0.0-alpha.5` |
 | `reflect-metadata` | `>=0.1.13` |
 | `rxjs` | `^7.0.0` |
 

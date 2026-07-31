@@ -1,7 +1,14 @@
 // Decorators on the module class and guard execute at import time.
 import 'reflect-metadata';
 import type { McpAuthInfo } from '@nest-mcp/common';
-import { type ExecutionContext, HttpException, Logger, Module } from '@nestjs/common';
+import {
+  type ExecutionContext,
+  HttpException,
+  Inject,
+  Injectable,
+  Logger,
+  Module,
+} from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -118,6 +125,45 @@ describe('McpAuthModule (runtime DI)', () => {
       expect(ref.get<BearerTokenVerifier>(MCP_BEARER_TOKEN_VERIFIER)).toBeInstanceOf(JwksVerifier);
 
       await ref.close();
+    });
+
+    it('injects a verifier instance exported by an imported module', async () => {
+      @Injectable()
+      class VerifierDependency {
+        readonly marker = 'imported';
+      }
+
+      @Injectable()
+      class ImportedVerifier implements BearerTokenVerifier {
+        constructor(@Inject(VerifierDependency) readonly dependency: VerifierDependency) {}
+
+        async verify(): Promise<McpAuthInfo | null> {
+          return null;
+        }
+      }
+
+      @Module({
+        providers: [VerifierDependency, ImportedVerifier],
+        exports: [ImportedVerifier],
+      })
+      class VerifierModule {}
+
+      const ref = await compile(
+        McpAuthModule.forRootAsync({
+          imports: [VerifierModule],
+          inject: [ImportedVerifier],
+          useFactory: (verifier: ImportedVerifier) =>
+            makeJwksOptions({ jwks: undefined, verifier }),
+        }),
+      );
+
+      try {
+        const verifier = ref.get<BearerTokenVerifier>(MCP_BEARER_TOKEN_VERIFIER);
+        expect(verifier).toBeInstanceOf(ImportedVerifier);
+        expect((verifier as ImportedVerifier).dependency.marker).toBe('imported');
+      } finally {
+        await ref.close();
+      }
     });
   });
 

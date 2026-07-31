@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   ci:
-    name: Check
+    name: Baseline (Nest 11 / Node 20)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,3 +29,20 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  nest-12-compat:
+    name: Nest 12 alpha / Node 24 / TypeScript 6 ESM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test:compat:nest12
