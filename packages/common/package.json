@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/common",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Shared types, interfaces, constants, utilities, and decorators for @nest-mcp",
   "license": "BSD-3-Clause",
   "main": "./dist/index.js",
