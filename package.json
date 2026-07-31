@@ -9,8 +9,9 @@
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:compat:nest12": "turbo run build --filter=@nest-mcp/common --filter=@nest-mcp/client --filter=@nest-mcp/server --filter=@nest-mcp/gateway && node scripts/test-nest12-compat.mjs",
     "test:watch": "vitest",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint && biome check scripts/ test/compat/",
     "lint:fix": "biome check --write .",
     "typecheck": "turbo run typecheck",
     "format": "biome format --write .",
