@@ -1,5 +1,14 @@
 # @nest-mcp/common
 
+## 0.6.1
+
+### Patch Changes
+
+- f0657f8: Add compatibility with the exact tested NestJS `12.0.0-alpha.5` release while retaining NestJS 10
+  and 11 support. CI now runs the full workspace against NestJS 12 on Node.js 24 and verifies packed
+  CommonJS packages from a TypeScript 6 native ESM consumer, including registered client shutdown,
+  async imported-verifier dependency injection, and gateway initialization.
+
 ## 0.6.0
 
 ### Minor Changes

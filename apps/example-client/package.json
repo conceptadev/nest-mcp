@@ -1,6 +1,6 @@
 {
   "name": "@nest-mcp/example-client",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "private": true,
   "description": "Example NestJS app consuming an MCP server via @nest-mcp/client",
   "scripts": {
